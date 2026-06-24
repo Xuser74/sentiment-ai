@@ -10,8 +10,6 @@ pipeline {
 
         stage('Checkout') {
             steps {
-                checkout scm
-
                 script {
                     env.IMAGE_TAG = sh(
                         script: 'git rev-parse --short HEAD',
@@ -24,6 +22,7 @@ pipeline {
 
                 sh 'git log --oneline -5'
             }
+        }
         }
 
         stage('Lint') {
