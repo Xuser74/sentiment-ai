@@ -23,7 +23,6 @@ pipeline {
                 sh 'git log --oneline -5'
             }
         }
-        }
 
         stage('Lint') {
             steps {
