@@ -19,51 +19,20 @@
 
 ## Capture 1 - Premier commit Git
 
-Commande :
 
-```bash
-git log --oneline
-```
-
-Capture attendue :
-
-* Commit `feat: initialiser la structure SentimentAI`
-* Historique Git visible
+![alt text](image.png)
 
 ---
 
 ## Capture 2 - Build Docker réussi
 
-Commande :
-
-```bash
-docker build -t sentiment-ai:latest .
-```
-
-Capture attendue :
-
-* Fin du build
-* Ligne `Successfully tagged sentiment-ai:latest`
+![alt text](image-1.png)
 
 ---
 
 ## Capture 3 - Test de l'API
 
-Commande :
-
-```bash
-POST /predict
-```
-
-Capture attendue :
-
-```json
-{
-  "label": "POSITIVE",
-  "score": 0.7,
-  "text": "Ce produit est excellent !"
-}
-```
+![alt text](image-2.png)
 
 ---
 
@@ -71,45 +40,19 @@ Capture attendue :
 
 Commande :
 
-```bash
-docker compose ps
-```
-
-Capture attendue :
-
-* Conteneur `sentiment-staging`
-* Statut `healthy`
+![alt text](image-3.png)
 
 ---
 
 ## Capture 5 - Tests automatisés
 
-Commande :
-
-```bash
-make test
-```
-
-Capture attendue :
-
-* `test_health PASSED`
-* `test_predict_positive PASSED`
-* `test_predict_empty_fails PASSED`
-* Rapport de couverture (`coverage`)
+![alt text](image-4.png)
 
 ---
 
 ## Capture 6 - Tag Git
 
-Commande :
-
-```bash
-git log --oneline --decorate
-```
-
-Capture attendue :
-
-* Présence du tag `v0.1.0`
+![alt text](image-5.png)
 
 ---
 
