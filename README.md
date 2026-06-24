@@ -949,3 +949,227 @@ Terraform permet :
 
 ---
 
+# TP5 – Monitoring avec Prometheus et Grafana
+
+## Objectif
+
+L'objectif de ce TP était d'ajouter une couche de monitoring à l'application SentimentAI afin de suivre son activité en temps réel.
+
+Pour cela, plusieurs outils ont été mis en place :
+
+* Instrumentation de l'API FastAPI avec Prometheus
+* Collecte des métriques via Prometheus
+* Visualisation des données avec Grafana
+* Création de tableaux de bord de supervision
+
+---
+
+## Architecture mise en place
+
+```text
+Utilisateur
+      |
+      v
+FastAPI (SentimentAI)
+      |
+      v
+Endpoint /metrics
+      |
+      v
+Prometheus
+      |
+      v
+Grafana
+```
+
+L'application expose désormais des métriques Prometheus accessibles via l'endpoint :
+
+```bash
+http://localhost:8000/metrics
+```
+
+Prometheus récupère ces métriques automatiquement et Grafana permet leur visualisation sous forme de tableaux de bord.
+
+---
+
+## Étape 1 : Instrumentation de l'API
+
+Les bibliothèques suivantes ont été ajoutées :
+
+```txt
+prometheus-client
+prometheus-fastapi-instrumentator
+```
+
+L'application FastAPI a été modifiée afin d'exposer automatiquement les métriques Prometheus.
+
+Des métriques personnalisées ont également été ajoutées :
+
+* Nombre total de prédictions réalisées
+* Niveau de confiance des prédictions
+
+---
+
+## Étape 2 : Vérification des métriques
+
+Une fois l'application démarrée, l'endpoint suivant a été testé :
+
+```bash
+http://localhost:8000/metrics
+```
+
+Le résultat affiche les métriques Prometheus exposées par l'application :
+
+```text
+# HELP sentiment_predictions_total
+# TYPE sentiment_predictions_total counter
+
+# HELP sentiment_prediction_confidence
+# TYPE sentiment_prediction_confidence gauge
+```
+
+---
+
+## Étape 3 : Déploiement de Prometheus
+
+Un dossier dédié au monitoring a été créé :
+
+```text
+monitoring/
+├── docker-compose.yml
+└── prometheus.yml
+```
+
+Prometheus a été configuré pour interroger automatiquement l'API SentimentAI.
+
+Extrait de configuration :
+
+```yaml
+scrape_configs:
+  - job_name: "sentiment-ai"
+
+    static_configs:
+      - targets:
+          - host.docker.internal:8000
+```
+
+---
+
+## Étape 4 : Déploiement de Grafana
+
+Grafana a été lancé via Docker Compose.
+
+Accès :
+
+```text
+http://localhost:3000
+```
+
+Identifiants par défaut :
+
+```text
+admin / admin
+```
+
+Une source de données Prometheus a ensuite été ajoutée :
+
+```text
+http://prometheus:9090
+```
+
+La connexion a été validée avec succès.
+
+---
+
+## Étape 5 : Création du Dashboard
+
+Un tableau de bord Grafana a été créé afin de suivre l'activité de l'API.
+
+Métrique utilisée :
+
+```promql
+sentiment_predictions_total
+```
+
+Des requêtes de test ont été envoyées à l'endpoint :
+
+```bash
+POST /predict
+```
+
+Le compteur augmente automatiquement à chaque prédiction effectuée.
+
+Exemple :
+
+```text
+1
+2
+3
+4
+5
+...
+```
+
+---
+
+## Validation
+
+### Vérification de l'API
+
+```bash
+GET /health
+```
+
+Réponse :
+
+```json
+{
+  "status": "ok"
+}
+```
+
+### Vérification des métriques
+
+```bash
+GET /metrics
+```
+
+Résultat :
+
+```text
+Métriques Prometheus disponibles
+```
+
+### Vérification Prometheus
+
+Dans l'interface Prometheus :
+
+```text
+Status → Targets
+```
+
+Le service :
+
+```text
+sentiment-ai
+```
+
+est affiché avec l'état :
+
+```text
+UP
+```
+
+### Vérification Grafana
+
+Le dashboard affiche correctement l'évolution du compteur :
+
+```promql
+sentiment_predictions_total
+```
+
+---
+
+![alt text](image-31.png)
+
+![alt text](image-30.png)
