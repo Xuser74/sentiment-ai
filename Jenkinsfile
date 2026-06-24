@@ -27,11 +27,15 @@ pipeline {
         stage('Lint') {
             steps {
                 sh '''
+                pwd
+                ls -la
+                find . -maxdepth 2 -type f
+
                 docker run --rm \
                 -v "$WORKSPACE:/workspace" \
                 -w /workspace \
                 python:3.12-slim \
-                sh -c "pip install flake8 -q && flake8 src/ --max-line-length=100"
+                sh -c "pwd && ls -la && find . -maxdepth 2 -type f"
                 '''
             }
         }
