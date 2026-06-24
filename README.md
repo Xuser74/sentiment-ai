@@ -603,5 +603,349 @@ La couverture permet de vérifier quelle proportion du code est exécutée lors 
 L'analyse automatique permet de détecter rapidement les problèmes de qualité et d'éviter leur propagation dans les environnements de production.
 
 ---
+---
+---
+# TP4 – Infrastructure as Code avec Terraform
 
+## Objectif
+
+L'objectif de ce TP est de découvrir l'approche Infrastructure as Code (IaC) avec Terraform.
+
+Les objectifs sont :
+
+* Installer Terraform.
+* Créer une infrastructure déclarative.
+* Déployer automatiquement des ressources Docker.
+* Gérer le cycle de vie des ressources.
+* Utiliser les commandes Terraform pour créer, modifier et supprimer une infrastructure.
+* Comprendre le fonctionnement du fichier d'état (Terraform State).
+
+---
+
+# 1. Installation de Terraform
+
+Terraform a été installé sur le poste Windows à l'aide du gestionnaire de paquets Winget.
+
+Commande utilisée :
+
+```powershell
+winget install Hashicorp.Terraform
+```
+
+Vérification :
+
+```powershell
+terraform version
+```
+
+Résultat obtenu :
+
+```text
+Terraform v1.15.6
+on windows_amd64
+```
+
+![alt text](image-17.png)
+
+---
+
+# 2. Préparation de l'environnement
+
+Création du dossier dédié à l'infrastructure :
+
+```text
+infra/
+├── main.tf
+├── variables.tf
+└── outputs.tf
+```
+
+Ajout des fichiers Terraform nécessaires à la définition de l'infrastructure.
+
+![alt text](image-18.png)
+
+---
+
+# 3. Configuration du projet Terraform
+
+Ajout de la configuration de base :
+
+```terraform
+terraform {
+  required_version = ">= 1.5.0"
+}
+```
+
+Initialisation du projet :
+
+```powershell
+terraform init
+```
+
+Validation :
+
+```powershell
+terraform validate
+```
+
+Résultat :
+
+```text
+Success! The configuration is valid.
+```
+
+![alt text](image-19.png)
+![alt text](image-20.png)
+
+---
+
+# 4. Intégration du provider Docker
+
+Ajout du provider Docker permettant à Terraform de piloter Docker Desktop.
+
+Configuration :
+
+```terraform
+terraform {
+  required_providers {
+    docker = {
+      source  = "kreuzwerker/docker"
+      version = "~> 3.0"
+    }
+  }
+}
+
+provider "docker" {}
+```
+
+Le provider est automatiquement téléchargé lors de l'initialisation du projet.
+
+![alt text](image-21.png)
+
+---
+
+# 5. Déploiement d'un conteneur Docker
+
+Création d'une image Docker Nginx :
+
+```terraform
+resource "docker_image" "nginx" {
+  name = "nginx:latest"
+}
+```
+
+Création du conteneur :
+
+```terraform
+resource "docker_container" "nginx" {
+  name  = "terraform-nginx"
+  image = docker_image.nginx.image_id
+
+  ports {
+    internal = 80
+    external = 8088
+  }
+}
+```
+
+![alt text](image-22.png)
+
+---
+
+# 6. Analyse du plan d'exécution
+
+Génération du plan :
+
+```powershell
+terraform plan
+```
+
+Résultat :
+
+```text
+Plan: 2 to add, 0 to change, 0 to destroy.
+```
+
+Terraform indique les ressources qui seront créées :
+
+* Image Docker Nginx
+* Conteneur Docker Nginx
+
+![alt text](image-23.png)
+
+---
+
+# 7. Déploiement de l'infrastructure
+
+Application de la configuration :
+
+```powershell
+terraform apply
+```
+
+Validation :
+
+```text
+yes
+```
+
+Résultat obtenu :
+
+```text
+Apply complete! Resources: 2 added, 0 changed, 0 destroyed.
+```
+
+![alt text](image-24.png)
+
+---
+
+# 8. Vérification du déploiement
+
+Liste des conteneurs Docker :
+
+```powershell
+docker ps
+```
+
+Résultat observé :
+
+```text
+terraform-nginx
+```
+
+Accès au service :
+
+```text
+http://localhost:8088
+```
+
+Affichage de la page par défaut Nginx :
+
+```text
+Welcome to nginx!
+```
+
+![alt text](image-25.png)
+![alt text](image-26.png)
+
+---
+
+# 9. Consultation du Terraform State
+
+Affichage de l'état courant :
+
+```powershell
+terraform show
+```
+
+Le fichier d'état contient les informations relatives aux ressources créées :
+
+* docker_image.nginx
+* docker_container.nginx
+
+![alt text](image-27.png)
+
+---
+
+# 10. Suppression de l'infrastructure
+
+Destruction complète des ressources :
+
+```powershell
+terraform destroy
+```
+
+Validation :
+
+```text
+yes
+```
+
+Résultat :
+
+```text
+Destroy complete!
+```
+
+Vérification :
+
+```powershell
+docker ps
+```
+
+Le conteneur `terraform-nginx` n'apparaît plus.
+
+![alt text](image-28.png)
+
+---
+
+# 11. Recréation automatique
+
+Redéploiement :
+
+```powershell
+terraform apply
+```
+
+Résultat :
+
+```text
+Apply complete!
+```
+
+Le conteneur est recréé automatiquement à partir de la description présente dans les fichiers Terraform.
+
+![alt text](image-29.png)
+
+---
+
+# Questions
+
+## Qu'est-ce que l'Infrastructure as Code (IaC) ?
+
+L'Infrastructure as Code consiste à décrire l'infrastructure sous forme de fichiers de configuration versionnés plutôt qu'à effectuer les opérations manuellement.
+
+---
+
+## Quel est le rôle de Terraform ?
+
+Terraform permet d'automatiser le déploiement, la modification et la suppression d'infrastructures à partir de fichiers déclaratifs.
+
+---
+
+## Qu'est-ce qu'un provider Terraform ?
+
+Un provider est un plugin permettant à Terraform d'interagir avec une technologie ou un fournisseur spécifique (Docker, AWS, Azure, GCP, etc.).
+
+---
+
+## À quoi sert la commande terraform plan ?
+
+La commande `terraform plan` affiche les modifications qui seront appliquées avant leur exécution effective.
+
+---
+
+## À quoi sert la commande terraform apply ?
+
+La commande `terraform apply` applique la configuration et crée les ressources définies dans les fichiers Terraform.
+
+---
+
+## Quel est le rôle du fichier Terraform State ?
+
+Le fichier State conserve l'état réel des ressources gérées par Terraform afin de pouvoir comparer l'infrastructure existante avec la configuration souhaitée.
+
+---
+
+## Pourquoi utiliser Terraform dans une démarche DevOps ?
+
+Terraform permet :
+
+* l'automatisation du déploiement,
+* la reproductibilité des environnements,
+* le versionnement de l'infrastructure,
+* la réduction des erreurs manuelles,
+* l'intégration dans les pipelines CI/CD.
+
+---
 
