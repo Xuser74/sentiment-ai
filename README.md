@@ -377,5 +377,231 @@ Les tests automatisés permettent de détecter rapidement les régressions et de
 Le Jenkinsfile permet de versionner l'infrastructure CI/CD avec le code de l'application afin de garantir la reproductibilité de la pipeline.
 
 ---
+---
+---
+
+
+
+# TP3 – Intégration de SonarQube dans la Pipeline CI/CD
+
+## Objectif
+
+L'objectif de ce TP est d'améliorer la pipeline CI/CD mise en place lors du TP précédent en intégrant un outil d'analyse de qualité de code.
+
+Les objectifs sont :
+
+* Déployer SonarQube dans un environnement Docker.
+* Connecter Jenkins à SonarQube.
+* Réaliser une analyse automatique du code source.
+* Mesurer la couverture des tests.
+* Détecter les défauts de qualité et les vulnérabilités potentielles.
+* Intégrer l'analyse qualité dans la pipeline CI/CD.
+
+---
+
+# 1. Préparation de l'environnement
+
+## Création du réseau Docker partagé
+
+Création d'un réseau Docker permettant la communication entre Jenkins et SonarQube.
+
+Commande utilisée :
+
+```bash
+docker network create cicd-network
+```
+
+Vérification :
+
+```bash
+docker network ls
+```
+
+![alt text](image-11.png)
+
+---
+
+# 2. Connexion de Jenkins au réseau
+
+Connexion du conteneur Jenkins au réseau partagé :
+
+```bash
+docker network connect cicd-network jenkins
+```
+
+---
+
+# 3. Déploiement de SonarQube
+
+Lancement du conteneur SonarQube :
+
+```bash
+docker run -d \
+--name sonarqube \
+--network cicd-network \
+-p 9000:9000 \
+-e SONAR_ES_BOOTSTRAP_CHECKS_DISABLE=true \
+sonarqube:lts-community
+```
+
+
+Accès à l'interface :
+
+```text
+http://localhost:9000
+```
+
+![alt text](image-12.png)
+
+---
+
+# 4. Création du projet SonarQube
+
+Création du projet :
+
+```text
+Nom : SentimentAI
+Clé : sentiment-ai
+Branche principale : main
+```
+
+---
+
+# 5. Génération du token d'analyse
+
+Création d'un token global pour Jenkins.
+
+Configuration :
+
+```text
+Nom : jenkins-token
+Type : Global Analysis Token
+```
+
+Ajout du token dans Jenkins :
+
+```text
+Administrer Jenkins
+→ Credentials
+→ Global Credentials
+→ Secret Text
+```
+
+Identifiant utilisé :
+
+```text
+sonar-token
+```
+
+---
+
+# 6. Configuration du serveur SonarQube dans Jenkins
+
+Ajout du serveur SonarQube :
+
+```text
+Name : sonarqube
+URL : http://sonarqube:9000
+```
+
+Sélection du credential :
+
+```text
+sonar-token
+```
+
+![alt text](image-13.png)
+
+---
+
+# 7. Modification du Jenkinsfile
+
+Ajout du stage :
+
+```text
+SonarQube Analysis
+```
+
+Fonctions réalisées :
+
+* Construction de l'image Docker.
+* Exécution des tests automatisés.
+* Génération du fichier coverage.xml.
+* Analyse automatique du code via SonarScanner.
+
+
+![alt text](image-14.png)
+
+---
+
+# 8. Exécution de la pipeline
+
+Pipeline exécutée avec les étapes suivantes :
+
+1. Checkout
+2. Lint
+3. Build & Test
+4. SonarQube Analysis
+5. Push
+
+Les tests sont exécutés automatiquement avant l'analyse SonarQube.
+
+![alt text](image-15.png)
+
+
+---
+
+# 10. Résultats SonarQube
+
+Analyse du projet réalisée avec succès.
+
+Informations observées :
+
+* Analyse du code source Python.
+* Vérification des bonnes pratiques.
+* Détection des problèmes potentiels.
+* Analyse de la couverture des tests.
+* Génération du tableau de bord qualité.
+
+Résultat :
+
+```text
+ANALYSIS SUCCESSFUL
+```
+
+![alt text](image-16.png)
+
+---
+
+# Questions
+
+## Quel est le rôle de SonarQube ?
+
+SonarQube est une plateforme d'analyse continue de la qualité du code permettant de détecter les bugs, vulnérabilités, duplications de code et problèmes de maintenabilité.
+
+## Pourquoi intégrer SonarQube dans une pipeline CI/CD ?
+
+L'intégration permet de contrôler automatiquement la qualité du code à chaque modification avant le déploiement de l'application.
+
+## Quelles informations fournit SonarQube ?
+
+SonarQube fournit notamment :
+
+* Les bugs potentiels.
+* Les vulnérabilités de sécurité.
+* La dette technique.
+* La couverture des tests.
+* Les duplications de code.
+* Les métriques de maintenabilité.
+
+## Pourquoi mesurer la couverture de tests ?
+
+La couverture permet de vérifier quelle proportion du code est exécutée lors des tests afin d'identifier les zones insuffisamment testées.
+
+## Quel est l'intérêt d'une analyse automatique ?
+
+L'analyse automatique permet de détecter rapidement les problèmes de qualité et d'éviter leur propagation dans les environnements de production.
+
+---
 
 
