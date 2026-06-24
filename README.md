@@ -1,3 +1,11 @@
+## Dépôt GitHub
+
+Repository du projet :
+
+[https://github.com/Xuser74/sentiment-ai](https://github.com/Xuser74/sentiment-ai)
+
+---
+
 # TP1 - Git & Docker - Rapport
 
 ## Informations
@@ -947,6 +955,8 @@ Terraform permet :
 * la réduction des erreurs manuelles,
 * l'intégration dans les pipelines CI/CD.
 
+---
+---
 ---
 
 # TP5 – Monitoring avec Prometheus et Grafana
